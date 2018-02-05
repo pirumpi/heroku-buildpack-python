@@ -154,6 +154,18 @@ export PKG_CONFIG_PATH=/app/.heroku/vendor/lib/pkg-config:/app/.heroku/python/li
 # Switch to the repo's context.
 cd "$BUILD_DIR"
 
+# download
+curl https://s3.amazonaws.com/mergeguard/cmake.tar.gz -s -O
+
+# make dir
+mkdir -p /tmp/codon/vendor
+
+# untar the binary to the directory we want
+tar -C /tmp/codon/vendor -xvf cmake.tar.gz
+
+debug=`ls /tmp/codon/vendor/bin`
+echo $debug
+
 # Warn for lack of Procfile.
 if [[ ! -f Procfile ]]; then
   puts-warn 'Warning: Your application is missing a Procfile. This file tells Heroku how to run your application.'
