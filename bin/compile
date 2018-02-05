@@ -30,8 +30,27 @@ function indent() {
   echo "       $*"
 }
 
+
+# Standard Library.
+export BPLOG_PREFIX="buildpack.python"
+export BUILDPACK_LOG_FILE=${BUILDPACK_LOG_FILE:-/dev/null}
+
+[ "$BUILDPACK_XTRACE" ] && set -o xtrace
+
+# Prepend proper path for virtualenv hackery. This will be deprecated soon.
+export PATH=:/usr/local/bin:$PATH
+
+# Paths.
+BIN_DIR=$(cd "$(dirname "$0")"; pwd) # absolute path
+ROOT_DIR=$(dirname "$BIN_DIR")
+BUILD_DIR=$1
+CACHE_DIR=$2
+ENV_DIR=$3
+
+export BUILD_DIR CACHE_DIR ENV_DIR
+
 topic "Installing boost"
-#source $(dirname $0)/../config.sh
+source $(dirname $0)/../config.sh
 
 indent "BUILD_DIR: $BUILD_DIR"
 indent "CACHE_DIR: $CACHE_DIR"
@@ -73,25 +92,6 @@ export BOOST_LIBRARYDIR="$boost_lib_path/lib"
 #give environment to later buildpacks
 export | grep -E -e ' (BOOST_ROOT|BOOST_INCLUDEDIR|BOOST_LIBRARYDIR)='  > "$LP_DIR/export"
 
-
-
-# Standard Library.
-export BPLOG_PREFIX="buildpack.python"
-export BUILDPACK_LOG_FILE=${BUILDPACK_LOG_FILE:-/dev/null}
-
-[ "$BUILDPACK_XTRACE" ] && set -o xtrace
-
-# Prepend proper path for virtualenv hackery. This will be deprecated soon.
-export PATH=:/usr/local/bin:$PATH
-
-# Paths.
-BIN_DIR=$(cd "$(dirname "$0")"; pwd) # absolute path
-ROOT_DIR=$(dirname "$BIN_DIR")
-BUILD_DIR=$1
-CACHE_DIR=$2
-ENV_DIR=$3
-
-export BUILD_DIR CACHE_DIR ENV_DIR
 
 # Python defaults
 DEFAULT_PYTHON_VERSION="python-3.6.4"
