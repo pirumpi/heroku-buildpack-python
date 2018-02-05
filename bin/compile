@@ -90,7 +90,7 @@ export BOOST_INCLUDEDIR="$boost_lib_path/include"
 export BOOST_LIBRARYDIR="$boost_lib_path/lib"
 
 #give environment to later buildpacks
-export | grep -E -e ' (BOOST_ROOT|BOOST_INCLUDEDIR|BOOST_LIBRARYDIR)='  > "$LP_DIR/export"
+#export | grep -E -e ' (BOOST_ROOT|BOOST_INCLUDEDIR|BOOST_LIBRARYDIR)='  > "$LP_DIR/export"
 
 
 # Python defaults
