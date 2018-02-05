@@ -15,6 +15,66 @@
 # Fail fast and fail hard.
 set -eo pipefail
 
+
+
+function error() {
+  echo " !     $*" >&2
+  exit 1
+}
+
+function topic() {
+  echo "-----> $*"
+}
+
+function indent() {
+  echo "       $*"
+}
+
+topic "Installing boost"
+source $(dirname $0)/../config.sh
+
+indent "BUILD_DIR: $BUILD_DIR"
+indent "CACHE_DIR: $CACHE_DIR"
+indent "LP_DIR: $LP_DIR"
+
+VENDORED_BOOST="$BUILD_DIR/.boost/$BOOST_VERSION"
+
+if [ ! -d "$VENDORED_BOOST" ]; then
+  # Control will enter here if VENDORED_BOOST doesn't exist.
+  indent "Download boost start $BOOST_DOWNLOAD_URL"
+  mkdir -p "$VENDORED_BOOST"
+
+  curl "$BOOST_DOWNLOAD_URL" -L -s -o - | tar xzf - -C "$VENDORED_BOOST"
+  indent "Download boost end"
+
+fi
+
+boost_lib_path="$BUILD_DIR/.heroku/vendor"
+mkdir -p "$boost_lib_path"
+
+cd $VENDORED_BOOST/boost_*
+
+topic "./bootstrap.sh --with-libraries=python --prefix=$boost_lib_path"
+
+./bootstrap.sh --with-python=/usr/bin/python3 --with-libraries=python --with-python-version=python3.6 --prefix=$boost_lib_path
+./b2
+./b2 install
+
+topic "Writing profile script"
+mkdir -p $BUILD_DIR/.profile.d
+cat <<EOF >$BUILD_DIR/.profile.d/000_boost.sh
+EOF
+
+# Prepend proper environment variables for Python use.
+export BOOST_ROOT="$boost_lib_path"
+export BOOST_INCLUDEDIR="$boost_lib_path/include"
+export BOOST_LIBRARYDIR="$boost_lib_path/lib"
+
+#give environment to later buildpacks
+export | grep -E -e ' (BOOST_ROOT|BOOST_INCLUDEDIR|BOOST_LIBRARYDIR)='  > "$LP_DIR/export"
+
+
+
 # Standard Library.
 export BPLOG_PREFIX="buildpack.python"
 export BUILDPACK_LOG_FILE=${BUILDPACK_LOG_FILE:-/dev/null}
